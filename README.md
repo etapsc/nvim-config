@@ -13,6 +13,14 @@ Personal Neovim configuration based on [kickstart.nvim](https://github.com/nvim-
 - Node.js / npm (for markdown-preview, prettier, ts_ls)
 - Clipboard tool (`xclip` or `xsel` on Linux)
 
+#### MacOS
+```shell
+brew install tree-sitter
+brew install node          # for markdown-preview build step
+brew install ripgrep       # for telescope live grep
+brew install fd            # for telescope file finding
+```
+
 ### Install
 
 Back up your existing config if needed, then:
