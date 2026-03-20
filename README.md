@@ -14,11 +14,18 @@ Personal Neovim configuration based on [kickstart.nvim](https://github.com/nvim-
 - Clipboard tool (`xclip` or `xsel` on Linux)
 
 #### MacOS
+
 ```shell
 brew install tree-sitter
 brew install node          # for markdown-preview build step
 brew install ripgrep       # for telescope live grep
 brew install fd            # for telescope file finding
+```
+
+#### All
+
+```shell
+cargo install tree-sitter-cli
 ```
 
 ### Install
