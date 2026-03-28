@@ -4,31 +4,41 @@ Personal Neovim configuration based on [kickstart.nvim](https://github.com/nvim-
 
 ## Installation
 
-### Prerequisites
+### 1. Install prerequisites
 
-- Neovim >= 0.11 (stable)
-- git, make, unzip, gcc
-- [ripgrep](https://github.com/BurntSushi/ripgrep#installation)
-- [A Nerd Font](https://www.nerdfonts.com/) (config expects one by default)
-- Node.js / npm (for markdown-preview, prettier, ts_ls)
-- Clipboard tool (`xclip` or `xsel` on Linux)
+The install script handles everything — Neovim, build tools, ripgrep, fd,
+Node.js, tree-sitter CLI, clipboard support, and a Nerd Font.
 
-#### MacOS
+Supported: **Ubuntu/Debian**, **Fedora/RHEL**, **Arch**, **macOS** (Homebrew).
 
-```shell
-brew install tree-sitter
-brew install node          # for markdown-preview build step
-brew install ripgrep       # for telescope live grep
-brew install fd            # for telescope file finding
+```sh
+# Run from anywhere — no clone needed yet
+bash <(curl -fsSL https://raw.githubusercontent.com/etapsc/nvim-config/main/scripts/install-deps.sh)
 ```
 
-#### All
+Or, if you already cloned the repo:
 
-```shell
-cargo install tree-sitter-cli
+```sh
+./scripts/install-deps.sh
 ```
 
-### Install
+<details>
+<summary>What gets installed</summary>
+
+| Category | Packages |
+| --- | --- |
+| Core | neovim (>= 0.11), git, make, unzip, gcc, curl |
+| Search | ripgrep, fd |
+| Node | nodejs, npm |
+| Treesitter | tree-sitter CLI (via cargo, brew, or npm) |
+| Clipboard | xclip (Linux only) |
+| Font | JetBrainsMono Nerd Font |
+
+LSP servers, formatters, and linters (clangd, gopls, pyright, black, prettier,
+etc.) are auto-installed by Mason on first launch — no manual step needed.
+</details>
+
+### 2. Clone the config
 
 Back up your existing config if needed, then:
 
@@ -36,13 +46,15 @@ Back up your existing config if needed, then:
 git clone git@github.com:etapsc/nvim-config.git ~/.config/nvim
 ```
 
-Start Neovim — Lazy will auto-install all plugins on first launch:
+### 3. Launch Neovim
+
+Lazy will auto-install all plugins on first launch:
 
 ```sh
 nvim
 ```
 
-Run `:checkhealth` to verify everything is working.
+Run `:checkhealth` to verify everything is working. Set the **JetBrainsMono Nerd Font** in your terminal emulator if icons look wrong.
 
 ## What's Included
 

@@ -1,0 +1,164 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Install all prerequisites for this Neovim configuration.
+# Supports: Ubuntu/Debian, Fedora/RHEL, Arch, macOS (Homebrew).
+
+NERD_FONT="JetBrainsMono"
+NERD_FONT_VERSION="3.3.0"
+
+# ── helpers ───────────────────────────────────────────────────────────
+
+info()  { printf '\033[1;34m[info]\033[0m  %s\n' "$*"; }
+ok()    { printf '\033[1;32m[ok]\033[0m    %s\n' "$*"; }
+warn()  { printf '\033[1;33m[warn]\033[0m  %s\n' "$*"; }
+error() { printf '\033[1;31m[error]\033[0m %s\n' "$*"; exit 1; }
+
+has() { command -v "$1" &>/dev/null; }
+
+# ── detect OS / package manager ───────────────────────────────────────
+
+detect_pm() {
+  if [[ "$OSTYPE" == darwin* ]]; then
+    has brew || error "Homebrew not found. Install it first: https://brew.sh"
+    PM=brew
+  elif has apt-get; then
+    PM=apt
+  elif has dnf; then
+    PM=dnf
+  elif has pacman; then
+    PM=pacman
+  else
+    error "Unsupported package manager. Install the dependencies manually (see README)."
+  fi
+}
+
+# ── install system packages ───────────────────────────────────────────
+
+install_packages() {
+  info "Installing system packages via $PM ..."
+
+  case $PM in
+    brew)
+      brew install neovim git make unzip gcc ripgrep fd node tree-sitter
+      ;;
+    apt)
+      sudo apt-get update
+      sudo apt-get install -y \
+        neovim git make unzip gcc ripgrep fd-find nodejs npm xclip curl
+      # fd is packaged as fd-find on Debian/Ubuntu; create symlink if missing
+      if ! has fd && has fdfind; then
+        sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+      fi
+      ;;
+    dnf)
+      sudo dnf install -y \
+        neovim git make unzip gcc ripgrep fd-find nodejs npm xclip curl
+      if ! has fd && has fdfind; then
+        sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+      fi
+      ;;
+    pacman)
+      sudo pacman -Syu --needed --noconfirm \
+        neovim git make unzip gcc ripgrep fd nodejs npm xclip curl
+      ;;
+  esac
+
+  ok "System packages installed."
+}
+
+# ── tree-sitter CLI ──────────────────────────────────────────────────
+
+install_tree_sitter_cli() {
+  if has tree-sitter; then
+    ok "tree-sitter CLI already installed."
+    return
+  fi
+
+  if has cargo; then
+    info "Installing tree-sitter-cli via cargo ..."
+    cargo install tree-sitter-cli
+  elif [[ $PM == brew ]]; then
+    # already installed above via brew
+    :
+  elif has npm; then
+    info "Installing tree-sitter-cli via npm ..."
+    sudo npm install -g tree-sitter-cli
+  else
+    warn "Cannot install tree-sitter-cli — install Rust (rustup) or npm first."
+    return
+  fi
+
+  ok "tree-sitter CLI installed."
+}
+
+# ── Nerd Font ─────────────────────────────────────────────────────────
+
+install_nerd_font() {
+  local font_dir
+  if [[ "$OSTYPE" == darwin* ]]; then
+    font_dir="$HOME/Library/Fonts"
+  else
+    font_dir="$HOME/.local/share/fonts"
+  fi
+
+  # Check if already installed
+  if ls "$font_dir"/${NERD_FONT}* &>/dev/null 2>&1; then
+    ok "$NERD_FONT Nerd Font already installed."
+    return
+  fi
+
+  info "Installing $NERD_FONT Nerd Font v${NERD_FONT_VERSION} ..."
+  local url="https://github.com/ryanoasis/nerd-fonts/releases/download/v${NERD_FONT_VERSION}/${NERD_FONT}.zip"
+  local tmp
+  tmp="$(mktemp -d)"
+
+  curl -fsSL "$url" -o "$tmp/${NERD_FONT}.zip"
+  mkdir -p "$font_dir"
+  unzip -qo "$tmp/${NERD_FONT}.zip" -d "$font_dir" -x "LICENSE*" "README*"
+  rm -rf "$tmp"
+
+  # Rebuild font cache on Linux
+  if has fc-cache; then
+    fc-cache -f "$font_dir"
+  fi
+
+  ok "$NERD_FONT Nerd Font installed. Set it in your terminal emulator."
+}
+
+# ── Neovim version check ─────────────────────────────────────────────
+
+check_nvim_version() {
+  if ! has nvim; then
+    warn "Neovim was not found after install — you may need to add it to PATH or install manually."
+    return
+  fi
+
+  local ver
+  ver="$(nvim --version | head -1 | grep -oP '\d+\.\d+')"
+  if awk "BEGIN{exit !($ver < 0.11)}"; then
+    warn "Neovim $ver found but >= 0.11 is required. Consider installing from https://github.com/neovim/neovim/releases"
+  else
+    ok "Neovim $ver found."
+  fi
+}
+
+# ── main ──────────────────────────────────────────────────────────────
+
+main() {
+  info "Setting up prerequisites for nvim-config ..."
+  echo
+
+  detect_pm
+  install_packages
+  install_tree_sitter_cli
+  install_nerd_font
+  check_nvim_version
+
+  echo
+  ok "All done! Clone the config and run nvim:"
+  echo "  git clone git@github.com:etapsc/nvim-config.git ~/.config/nvim"
+  echo "  nvim"
+}
+
+main "$@"
