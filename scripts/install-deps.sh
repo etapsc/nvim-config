@@ -74,12 +74,15 @@ install_neovim() {
   # Check if already installed with sufficient version
   if has nvim; then
     local cur
-    cur="$(nvim --version | head -1 | grep -oP '\d+\.\d+')"
-    if ! awk "BEGIN{exit !($cur < $NVIM_MIN_VERSION)}"; then
+    cur="$(nvim --version | head -1 | grep -oP '\d+\.\d+\.\d+')"
+    local major minor
+    major="$(echo "$cur" | cut -d. -f1)"
+    minor="$(echo "$cur" | cut -d. -f2)"
+    if [[ "$major" -gt 0 ]] || [[ "$major" -eq 0 && "$minor" -ge 11 ]]; then
       ok "Neovim $cur already installed."
       return
     fi
-    warn "Neovim $cur found but >= $NVIM_MIN_VERSION is required. Upgrading ..."
+    warn "Neovim $cur found but >= 0.11 is required. Upgrading ..."
   fi
 
   if [[ $PM == brew ]]; then
