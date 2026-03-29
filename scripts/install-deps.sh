@@ -4,6 +4,7 @@ set -euo pipefail
 # Install all prerequisites for this Neovim configuration.
 # Supports: Ubuntu/Debian, Fedora/RHEL, Arch, macOS (Homebrew).
 
+NVIM_MIN_VERSION="0.11"
 NERD_FONT="JetBrainsMono"
 NERD_FONT_VERSION="3.3.0"
 
@@ -40,12 +41,12 @@ install_packages() {
 
   case $PM in
     brew)
-      brew install neovim git make unzip gcc ripgrep fd node tree-sitter
+      brew install git make unzip gcc ripgrep fd tree-sitter
       ;;
     apt)
       sudo apt-get update
       sudo apt-get install -y \
-        neovim git make unzip gcc ripgrep fd-find nodejs npm xclip curl
+        git make unzip gcc ripgrep fd-find xclip curl
       # fd is packaged as fd-find on Debian/Ubuntu; create symlink if missing
       if ! has fd && has fdfind; then
         sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
@@ -53,18 +54,63 @@ install_packages() {
       ;;
     dnf)
       sudo dnf install -y \
-        neovim git make unzip gcc ripgrep fd-find nodejs npm xclip curl
+        git make unzip gcc ripgrep fd-find xclip curl
       if ! has fd && has fdfind; then
         sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
       fi
       ;;
     pacman)
       sudo pacman -Syu --needed --noconfirm \
-        neovim git make unzip gcc ripgrep fd nodejs npm xclip curl
+        git make unzip gcc ripgrep fd xclip curl
       ;;
   esac
 
   ok "System packages installed."
+}
+
+# ── Neovim ────────────────────────────────────────────────────────────
+
+install_neovim() {
+  # Check if already installed with sufficient version
+  if has nvim; then
+    local cur
+    cur="$(nvim --version | head -1 | grep -oP '\d+\.\d+')"
+    if ! awk "BEGIN{exit !($cur < $NVIM_MIN_VERSION)}"; then
+      ok "Neovim $cur already installed."
+      return
+    fi
+    warn "Neovim $cur found but >= $NVIM_MIN_VERSION is required. Upgrading ..."
+  fi
+
+  if [[ $PM == brew ]]; then
+    brew install neovim
+  elif [[ $PM == pacman ]]; then
+    sudo pacman -Syu --needed --noconfirm neovim
+  else
+    # Distro repos are usually too old — install from GitHub releases
+    info "Installing Neovim from GitHub releases ..."
+    local arch
+    arch="$(uname -m)"
+    # Map to Neovim release asset names
+    case "$arch" in
+      x86_64)  arch="x86_64" ;;
+      aarch64) arch="aarch64" ;;
+      *) error "Unsupported architecture: $arch" ;;
+    esac
+
+    local url="https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${arch}.tar.gz"
+    local tmp
+    tmp="$(mktemp -d)"
+
+    curl -fsSL "$url" -o "$tmp/nvim.tar.gz"
+    sudo rm -rf /opt/nvim
+    sudo mkdir -p /opt/nvim
+    sudo tar -xzf "$tmp/nvim.tar.gz" -C /opt/nvim --strip-components=1
+    sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
+    rm -rf "$tmp"
+  fi
+
+  ok "Neovim $(nvim --version | head -1 | grep -oP '\d+\.\d+\.\d+') installed."
 }
 
 # ── tree-sitter CLI ──────────────────────────────────────────────────
@@ -126,23 +172,6 @@ install_nerd_font() {
   ok "$NERD_FONT Nerd Font installed. Set it in your terminal emulator."
 }
 
-# ── Neovim version check ─────────────────────────────────────────────
-
-check_nvim_version() {
-  if ! has nvim; then
-    warn "Neovim was not found after install — you may need to add it to PATH or install manually."
-    return
-  fi
-
-  local ver
-  ver="$(nvim --version | head -1 | grep -oP '\d+\.\d+')"
-  if awk "BEGIN{exit !($ver < 0.11)}"; then
-    warn "Neovim $ver found but >= 0.11 is required. Consider installing from https://github.com/neovim/neovim/releases"
-  else
-    ok "Neovim $ver found."
-  fi
-}
-
 # ── main ──────────────────────────────────────────────────────────────
 
 main() {
@@ -151,9 +180,9 @@ main() {
 
   detect_pm
   install_packages
+  install_neovim
   install_tree_sitter_cli
   install_nerd_font
-  check_nvim_version
 
   echo
   ok "All done! Clone the config and run nvim:"

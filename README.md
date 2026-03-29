@@ -6,8 +6,9 @@ Personal Neovim configuration based on [kickstart.nvim](https://github.com/nvim-
 
 ### 1. Install prerequisites
 
-The install script handles everything — Neovim, build tools, ripgrep, fd,
-Node.js, tree-sitter CLI, clipboard support, and a Nerd Font.
+The install script handles everything — Neovim (from GitHub releases, not
+distro repos), build tools, ripgrep, fd, tree-sitter CLI, clipboard support,
+and a Nerd Font.
 
 Supported: **Ubuntu/Debian**, **Fedora/RHEL**, **Arch**, **macOS** (Homebrew).
 
@@ -29,7 +30,6 @@ Or, if you already cloned the repo:
 | --- | --- |
 | Core | neovim (>= 0.11), git, make, unzip, gcc, curl |
 | Search | ripgrep, fd |
-| Node | nodejs, npm |
 | Treesitter | tree-sitter CLI (via cargo, brew, or npm) |
 | Clipboard | xclip (Linux only) |
 | Font | JetBrainsMono Nerd Font |
@@ -62,7 +62,7 @@ Run `:checkhealth` to verify everything is working. Set the **JetBrainsMono Nerd
 
 - **Plugin manager**: [lazy.nvim](https://github.com/folke/lazy.nvim)
 - **Fuzzy finder**: [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) with fzf-native
-- **LSP**: nvim-lspconfig + Mason (auto-installs servers)
+- **LSP**: nvim-lspconfig + Mason (auto-installs servers and tools)
 - **Autocompletion**: [blink.cmp](https://github.com/saghen/blink.cmp) + LuaSnip
 - **Formatting**: [conform.nvim](https://github.com/stevearc/conform.nvim) (format on save)
 - **Treesitter**: syntax highlighting, indentation
@@ -88,7 +88,6 @@ Run `:checkhealth` to verify everything is working. Set the **JetBrainsMono Nerd
 | lualine | Statusline |
 | noice | Enhanced UI for cmdline, messages, notifications |
 | theme | Catppuccin (mocha) + Tokyonight (`<leader>ut` to toggle) |
-| markdown | Markdown preview in browser |
 | diffview | Visual git diff viewer and file history |
 | neogit | Interactive git status, commit, push/pull |
 
@@ -242,7 +241,6 @@ Inside the Neogit status panel:
 | `<leader>ut` | Toggle color theme |
 | `<Esc>` | Clear search highlights |
 | `<Esc><Esc>` | Exit terminal mode |
-| `:MarkdownPreview` | Open markdown preview in browser |
 | `:Lazy` | Plugin manager |
 | `:Mason` | LSP/tool installer |
 | `:WhichKey` | Show all keymaps |
