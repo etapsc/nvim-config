@@ -46,7 +46,7 @@ install_packages() {
     apt)
       sudo apt-get update
       sudo apt-get install -y \
-        git make unzip gcc ripgrep fd-find xclip curl
+        git make unzip gcc ripgrep fd-find xclip curl python3-pip python3-venv
       # fd is packaged as fd-find on Debian/Ubuntu; create symlink if missing
       if ! has fd && has fdfind; then
         sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
@@ -54,14 +54,14 @@ install_packages() {
       ;;
     dnf)
       sudo dnf install -y \
-        git make unzip gcc ripgrep fd-find xclip curl
+        git make unzip gcc ripgrep fd-find xclip curl python3-pip
       if ! has fd && has fdfind; then
         sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
       fi
       ;;
     pacman)
       sudo pacman -Syu --needed --noconfirm \
-        git make unzip gcc ripgrep fd xclip curl
+        git make unzip gcc ripgrep fd xclip curl python-pip
       ;;
   esac
 
@@ -89,9 +89,15 @@ install_neovim() {
   else
     # Distro repos are usually too old — install from GitHub releases
     info "Installing Neovim from GitHub releases ..."
+
+    # Remove distro neovim first to avoid version conflicts
+    case $PM in
+      apt) sudo apt-get remove -y neovim neovim-runtime 2>/dev/null || true ;;
+      dnf) sudo dnf remove -y neovim 2>/dev/null || true ;;
+    esac
+
     local arch
     arch="$(uname -m)"
-    # Map to Neovim release asset names
     case "$arch" in
       x86_64)  arch="x86_64" ;;
       aarch64) arch="aarch64" ;;
@@ -106,7 +112,8 @@ install_neovim() {
     sudo rm -rf /opt/nvim
     sudo mkdir -p /opt/nvim
     sudo tar -xzf "$tmp/nvim.tar.gz" -C /opt/nvim --strip-components=1
-    sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
+    # Symlink to /usr/bin so it takes precedence everywhere
+    sudo ln -sf /opt/nvim/bin/nvim /usr/bin/nvim
     rm -rf "$tmp"
   fi
 
