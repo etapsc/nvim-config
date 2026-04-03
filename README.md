@@ -90,6 +90,7 @@ Run `:checkhealth` to verify everything is working. Set the **JetBrainsMono Nerd
 | theme | Catppuccin (mocha) + Tokyonight (`<leader>ut` to toggle) |
 | diffview | Visual git diff viewer and file history |
 | neogit | Interactive git status, commit, push/pull |
+| spectre | Project-wide and single-file search & replace |
 
 ### LSP Servers (auto-installed via Mason)
 
@@ -120,6 +121,24 @@ Leader key is `Space`. Run `:WhichKey` to see all available mappings interactive
 | `<leader>sn` | Search Neovim config files |
 | `<leader>/` | Fuzzy search in current buffer |
 | `<leader><leader>` | Find open buffers |
+
+### Search and Replace (Spectre)
+
+[nvim-spectre](https://github.com/nvim-pack/nvim-spectre) provides an interactive search & replace panel. Live preview is also enabled for `:s` commands (`inccommand = 'split'`).
+
+| Key / Command | Action |
+| --- | ------ |
+| `<leader>sP` | Open Spectre — search & replace across project |
+| `<leader>sp` | Open Spectre — search & replace in current file |
+| `<leader>sp` (visual) | Search & replace visual selection |
+| `/pattern` | Search forward |
+| `?pattern` | Search backward |
+| `n` / `N` | Next / previous match |
+| `*` / `#` | Search word under cursor forward / backward |
+| `:%s/old/new/g` | Replace all occurrences in file |
+| `:%s/old/new/gc` | Replace all with confirmation |
+| `:s/old/new/g` | Replace all on current line |
+| `:'<,'>s/old/new/g` | Replace in visual selection |
 
 ### Buffers and Windows
 

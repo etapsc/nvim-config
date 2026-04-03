@@ -45,8 +45,12 @@ install_packages() {
       ;;
     apt)
       sudo apt-get update
+      # NodeSource LTS repo
+      if ! has node; then
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+      fi      
       sudo apt-get install -y \
-        git make unzip gcc ripgrep fd-find xclip curl python3-pip python3-venv
+        git make unzip gcc ripgrep fd-find xclip curl python3-pip python3-venv libclang-rt-dev
       # fd is packaged as fd-find on Debian/Ubuntu; create symlink if missing
       if ! has fd && has fdfind; then
         sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
@@ -131,15 +135,16 @@ install_tree_sitter_cli() {
     return
   fi
 
-  if has cargo; then
-    info "Installing tree-sitter-cli via cargo ..."
-    cargo install tree-sitter-cli
+  if has npm; then
+    info "Installing tree-sitter-cli via npm ..."
+    npm install -g tree-sitter-cli 2>/dev/null \
+       || sudo env "PATH=$PATH" npm install -g tree-sitter-cli
   elif [[ $PM == brew ]]; then
     # already installed above via brew
     :
-  elif has npm; then
-    info "Installing tree-sitter-cli via npm ..."
-    sudo npm install -g tree-sitter-cli
+  elif has cargo; then
+    info "Installing tree-sitter-cli via cargo ..."
+    cargo install tree-sitter-cli
   else
     warn "Cannot install tree-sitter-cli — install Rust (rustup) or npm first."
     return
